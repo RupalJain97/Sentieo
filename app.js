@@ -1,123 +1,20 @@
-document.getElementById('upload').addEventListener('change', CSV_Reader, false);
+var express = require('express');
+var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
 
-function CSV_Reader(e) {
-    var files = e.target.files;
-    var f = files[0];
+const port = process.env.PORT || 5500;
+server.listen(port, () => {
+    console.log("Listening server at port: " + port);
+    console.log("open : http://localhost:" + port);
+});
 
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var data = new Uint8Array(e.target.result);
+app.use(express.static("."));
 
-        // Reading CSV file
-        var workbook = XLSX.read(data, { type: 'array' });
+app.get("/", function(req, res, next) {
+    res.sendFile(__dirname + '/index.html');
+});
 
-        var sheets = workbook.Sheets.Sheet1;
-        // console.log(sheets);
-
-        var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-        var dataHeader = [],
-            data = [];
-        var j = -1; // row
-        var flag = 1,
-            len = 0,
-            cnt = 0;
-        for (var i in sheets) {
-            if (i == '!ref') {
-                continue;
-            }
-            if (i.slice(1, ) == 1 && flag == 1) {
-                dataHeader.push(sheets[i].v);
-                len = dataHeader.length;
-            } else {
-                flag = 0;
-                if (i.slice(0, 1) == 'A') {
-                    cnt = 0;
-                    j++;
-                    data[j] = [];
-                    data[j].push(sheets[i].w);
-                    cnt++;
-                } else if (i.slice(0, 1) == 'B') {
-                    data[j].push(parseFloat(sheets[i].w));
-                    cnt++;
-
-
-                    var address = XLSX.utils.encode_col(0) + (j + 2);
-                    var date = new Date(sheets[address].w);
-                    if (date.getDay() == 0 || date.getDay() == 6) {
-                        /// Column C
-                        data[j].push("");
-                        cnt++;
-                        /// Rest of columns for this row
-                        while (cnt != len) {
-                            data[j].push("");
-                            cnt++;
-                        }
-                    } else {
-                        /// Column C
-                        data[j].push(parseFloat(sheets[i].w));
-                        cnt++;
-                        /// Rest of columns 
-                        while (cnt != len) {
-                            var range = XLSX.utils.decode_range(sheets['!ref']);
-                            var C = range.s.c;
-                            var address = XLSX.utils.encode_col(C + cnt) + "1";
-                            var val = sheets[address].v.split(' ')[0];
-                            if ((j + 1) - val >= 0) {
-                                var temp = 1,
-                                    avg = parseFloat(sheets[i].w),
-                                    k = j + 2 - 1;
-                                while (k != 1) {
-                                    var add = XLSX.utils.encode_col(0) + k;
-                                    var d = new Date(sheets[add].w);
-                                    if (d.getDay() == 0 || d.getDay() == 6) {
-                                        k--;
-                                        continue;
-                                    } else {
-                                        if (temp == val) {
-                                            break;
-                                        }
-                                        var price = XLSX.utils.encode_col(1) + k;
-                                        avg += parseFloat(sheets[price].w);
-                                        k--;
-                                        temp++;
-                                    }
-                                }
-                                if (temp != val) {
-                                    data[j].push("");
-                                    cnt++;
-                                } else {
-                                    var avgVal = parseFloat(avg / val).toFixed(3);
-                                    data[j].push(avgVal);
-                                    cnt++;
-                                }
-                            } else {
-                                data[j].push("");
-                                cnt++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-
-        var ws = window.XLSX.utils.json_to_sheet(data);
-        var range = window.XLSX.utils.decode_range(ws['!ref']);
-
-        for (var C = range.s.c; C <= range.e.c; ++C) {
-            var address = XLSX.utils.encode_col(C) + "1";
-            if (!ws[address])
-                continue;
-            ws[address].v = dataHeader[C];
-        }
-        console.log(ws);
-        var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'result');
-
-        // Save the resulted CSV file
-        XLSX.writeFile(wb, 'result.csv', { bookType: 'csv', type: 'array' });
-    };
-    reader.readAsArrayBuffer(f);
-
-}
+io.on('connection', function(socket) {
+    console.log('Socket connected...');
+})
