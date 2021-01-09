@@ -1,0 +1,29 @@
+{
+    "name": "sentieo",
+    "version": "1.0.0",
+    "description": "Sentieo Test",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node app.js",
+        "debug": "nodemon --inspect app.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/RupalJain97/Sentieo.git"
+    },
+    "author": "Rupal",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/RupalJain97/Sentieo/issues"
+    },
+    "homepage": "https://github.com/RupalJain97/Sentieo#readme",
+    "dependencies": {
+        "express": "^4.17.1",
+        "fs": "0.0.1-security",
+        "node-xlsx": "^0.15.0",
+        "require": "^2.4.20",
+        "socket.io": "^3.0.5",
+        "xlsx": "^0.16.9"
+    }
+}
